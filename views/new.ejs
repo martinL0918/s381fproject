@@ -12,22 +12,22 @@
 			
 			<tr><td colspan="2" style="height:10px"></td></tr>
 			<tr><td colspan="2" class="table-info"><b>Basic Information: </b></td></tr>
-			<tr><td>Name:</td> <td><input name="name" value=""></td></tr> 
-			<tr><td>Borough:</td><td><input name="borough" value=""></td></tr> 
-			<tr><td>cuisine: </td><td><input name="cuisine" value=""></td></tr> 
+			<tr><td>Name:</td> <td><input name="name" value="" required></td></tr> 
+			<tr><td>Borough:</td><td><input name="borough" value="" required></td></tr> 
+			<tr><td>cuisine: </td><td><input name="cuisine" value="" required></td></tr> 
 			<tr><td>Photo: </td><td><input type="file" name="filetoupload"></td></tr> 
-			<tr><td>Photo mimetype: </td><td><input name="mimetype" value=""></td></tr>
+			<tr><td>Photo mimetype: </td><td><input name="mimetype" value="" required></td></tr>
 			
 			<tr><td colspan="2" style="height:10px" ></td></tr> 
 			<tr><td colspan="2" class="table-info"><b>Address: </b></td></tr>
-			<tr><td>Street: </td><td><input name="street" value=""></td></tr> 
-			<tr><td>building: </td><td><input name="building" value=""></td></tr> 
-			<tr><td>zipcode: </td><td><input name="zipcode" value=""></td></tr> 
-			<tr><td>coord: </td><td><input name="coordx" value="" placeholder="coordinate x"><input name="coordy" value="" placeholder="coordinate y" ></td></tr> 			
+			<tr><td>Street: </td><td><input name="street" value="" required></td></tr> 
+			<tr><td>building: </td><td><input name="building" value="" required></td></tr> 
+			<tr><td>zipcode: </td><td><input name="zipcode" value="" required></td></tr> 
+			<tr><td>coord: </td><td><input name="coordx" value="" placeholder="coordinate x" required><input name="coordy" value="" placeholder="coordinate y" required></td></tr> 		
 			<tr><td colspan="2" style="height:10px" ></td></tr>
 			<tr><td colspan="2" class="table-info"><b>Grades:</b></td></tr>
-			<tr><td>User: </td><td><input name="user" class="form-control" value="<%= user %>" disabled></td></tr> 
-			<tr><td>Score: </td><td><input name="score" value="" type="number" min="1" max="10" placeholder="1-10"></td></tr> 
+			<tr><td>User: </td><td><input name="user" class="form-control" value="<%= user %>" disabled ></td></tr> 
+			<tr><td>Score: </td><td><input name="score" value="" type="number" min="1" max="10" placeholder="1-10" required></td></tr> 
 			<tr><td>Owner: </td><td><input name="owner" class="form-control" value="<%= user %>" disabled></td></tr>  
 			</table>
 			<input type="submit" class="btn btn-primary" value="create" style="margin-top:10px">

@@ -19,7 +19,7 @@ const dbName = 'project';
 const SECRETKEY = "COMPS381F"
 
 const users = new Array(
-	{name: 'user'},
+	{name: 'demo'},
 	{name: 'student'}
 );
 
@@ -118,6 +118,27 @@ const updateDocument = (criteria, updateDoc, callback) => {
         );
     });
 }
+
+const pushDocument = (criteria, element, callback) => {
+    const client = new MongoClient(mongourl);
+    client.connect((err) => {
+        assert.equal(null, err);
+        console.log("Connected successfully to server");
+        const db = client.db(dbName);
+
+         db.collection('restaurant').updateOne(criteria,
+            {
+                $push : {grades:element}
+            },
+            (err, results) => {
+                client.close();
+                assert.equal(err, null);
+                callback(results);
+            }
+        );
+    });
+}
+
 const handle_Update = (req,res,criteria) => {
 	var DOCID = {};
 	DOCID['_id'] = ObjectID(req.fields._id);
@@ -195,31 +216,90 @@ const handle_Search = (res,criteria) => {
 const deleteDocument = (db, criteria, callback) => {
     db.collection('restaurant').deleteOne(criteria, (err,results) => {
         assert.equal(err,null);
-        console.log('deleteMany was successful');
+        console.log('deleteOne was successful');
 	callback(results);
     })
 
 }
 
-const handle_Delete = (res, criteria) => {
+const handle_Delete = (res, criteria, owner) => {
     const client = new MongoClient(mongourl);
     client.connect((err) => {
-        assert.equal(null, err);
+	assert.equal(null, err);
         console.log("Connected successfully to server");
         const db = client.db(dbName);
 	let DOCID = {};
 	DOCID['_id'] = ObjectID(criteria._id)
     	findDocument(db,DOCID, (docs) => {     
             console.log("handle Find - Closed DB connection");
-	    console.log("owner: " + docs[0].owner)
-	    deleteDocument(db,DOCID, (results)=> {
-			client.close();
-			console.log("Deleted Successfully")
-	    })
-        });
-        
+	    let documentName = docs[0].name;
+            if(docs[0].owner == owner){
+                deleteDocument(db,DOCID, (results)=> {
+                    client.close();
+		    res.status(200).render('info',{message:`You have deleted a document (Name: ${documentName})`});	
+                })
+            }
+            else {
+		res.status(200).render('info',{message:`You are not the owner! You can't delete it`});
+            }
+        }); 
     });
 }
+
+//peter work for q4
+const handle_Rate = (res,req,criteria) => {
+	const client = new MongoClient(mongourl);
+	client.connect((err) => {
+		assert.equal(null,err);
+		console.log("Connected sunccessfully to server");
+		const db = client.db(dbName);
+		let duplicateFlag = false;
+		var DOCID = {};
+		DOCID['_id'] = ObjectID(criteria._id);
+		findDocument(db,DOCID,(result)=>{
+			//let originalGrades = result;
+			for (let element of result[0].grades){
+				console.log(element.users +";" +req.session.username);
+				if(element.users == req.session.username){
+					duplicateFlag = true;
+					console.log("they are the same");
+				}
+			}
+			//console.log("the final :"+duplicateFlag);
+			if(duplicateFlag){
+				res.status(200).render('info',{message:"You have rated before"});
+			} else{
+				res.status(200).render('rate',{_id:criteria._id});
+			}
+		})
+		
+	});
+}
+
+const handle_updateRate = (res,req,criteria) => {
+	const client = new MongoClient(mongourl);
+	var DOCID = {};
+	DOCID['_id'] = ObjectID(criteria._id);
+	client.connect((err) => {
+		assert.equal(null,err);
+		console.log("Connected sunccessfully to server");
+		const db = client.db(dbName);
+		let rate = req.query.rate;
+		let name = req.session.username;
+		let grade = {"users":name, "score":rate};
+		let gradeStr = JSON.stringify(grade);
+		console.log("The DOCID:"+JSON.stringify(DOCID));
+		pushDocument(DOCID,grade,(results)=>{
+				res.status(200).render('info', {message: `Pushed ${gradeStr} into grades of document. ${results.result.nModified}`})
+		})
+
+	});
+}
+
+
+app.get('/updateRate',function(req,res){
+	handle_updateRate(res,req,req.query);
+});
 
 app.get('/find', function(req,res){
 	handle_Find(res,req,req.query);	
@@ -237,12 +317,22 @@ app.get('/details', (req,res) => {
    	handle_Details(res,req,req.query);
 })
 
+//peter work for q4
+
+app.get('/rate', (req,res) => {
+	handle_Rate(res,req,req.query);
+})
+
+app.get('/updateRate', (req,res)=>{
+	handle_updateRate(res,req,req.query);
+})
+
 app.get('/edit', (req,res)=>{
 	handle_Edit(res,req.query);
 })
 
 app.get('/delete', (req,res)=>{
-	handle_Delete(res,req.query);
+	handle_Delete(res,req.query,req.session.username);
 })
 
 app.get("/map", (req,res) => {
