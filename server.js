@@ -67,7 +67,7 @@ const handle_Find = (res,req, criteria) => {
 }
 
 
-const handle_Edit = (res,criteria) => {
+const handle_Edit = (res,req,criteria) => {
 	const client = new MongoClient(mongourl);
 	client.connect((err)=>{
 		assert.equal(null,err);
@@ -79,7 +79,12 @@ const handle_Edit = (res,criteria) => {
 		cursor.toArray((err,docs)=>{
 			client.close()
 			assert.equal(err,null);
-			res.status(200).render('edit',{restaurant : docs[0]})
+			if(docs[0].owner == req.session.username){
+				res.status(200).render('edit',{restaurant : docs[0]})
+			}
+			else{
+				res.status(200).render('info',{message: `You can't edit it! The owner of the document is "${docs[0].owner}", you are  you are not the owner.`});
+			}
 		})
 	})
 }
@@ -143,7 +148,16 @@ const handle_Update = (req,res,criteria) => {
 	var DOCID = {};
 	DOCID['_id'] = ObjectID(req.fields._id);
 	var updateDoc = {};
-	updateDoc['name'] = req.fields.name;;
+	updateDoc[`address`] = {};
+	updateDoc['name'] = req.fields.name;
+	updateDoc['borough'] = req.fields.borough;
+	updateDoc['cuisine'] = req.fields.cuisine;
+	updateDoc['street'] = req.fields.street;
+	updateDoc['mimetype'] = req.fields.mimetype;
+	updateDoc[`address`][`street`] = req.fields.street;
+	updateDoc[`address`][`building`] = req.fields.building;
+	updateDoc[`address`][`zipcode`] = req.fields.zipcode;
+	updateDoc[`address`][`coord`] = [req.fields.coordx,req.fields.coordy];
 	 if (req.files.filetoupload.size > 0){
 		fs.readFile(req.files.filetoupload.path, (err,data) =>{
 			assert.equal(err,null);
@@ -328,7 +342,7 @@ app.get('/updateRate', (req,res)=>{
 })
 
 app.get('/edit', (req,res)=>{
-	handle_Edit(res,req.query);
+	handle_Edit(res,req,req.query);
 })
 
 app.get('/delete', (req,res)=>{
