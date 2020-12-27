@@ -115,7 +115,7 @@ const updateDocument = (criteria, updateDoc, callback) => {
             {
                 $set : updateDoc
             },
-            (err, results) => {
+            (err, results) => { 
                 client.close();
                 assert.equal(err, null);
                 callback(results);
@@ -168,7 +168,6 @@ const handle_Update = (req,res,criteria) => {
 			})
 		})
 	} else{
-		updateDoc['mimetype'] = null;
 		updateDocument(DOCID,updateDoc, (results)=>{
 			res.status(200).render('info', {message: `Upadted ${results.result.nModified} document(s)`});
 			console.log("Files type"+ updateDoc['mimetype']);

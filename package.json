@@ -1,0 +1,17 @@
+{
+    "name": "MiniProject",
+    "description": "example",
+    "author": "Leung Tsz Kin, So Ka Leong",
+    "version": "0.0.1",
+    "dependencies": {
+        "ejs": "*",
+        "express": "*",
+        "express-formidable": "*",
+        "mongodb": "3.6.3",
+        "cookie-session": "*"
+    },
+    "engine": "node >= 12.10.0",
+    "scripts": {
+        "start": "node server"
+    }
+}
