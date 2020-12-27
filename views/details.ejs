@@ -6,7 +6,8 @@
 		<div class="container-fluid">
 			<table>
 				<% if (restaurant.photo) { %>
-				 	<tr><td rowspan = "15"><img src="data:image/jpg;base64, <%=restaurant.photo%>" width="480px" height="320px"></td></tr>
+				 	<tr><td rowspan = "15"><img src="data:image/jpg;base64, <%=restaurant.photo%>" width="480px" height="320px"></td><br><h4><span class="badge badge-info" style="margin-top:10px">Mimetype: </span></h4><h4><%=  restaurant.mimetype%><h4></tr>
+					
 				<% } %>
 				<tr><td colspan="2" ><h1 >Restaurant Details:<h1><td></tr><hr>
 				<tr class="bg-info"><td colspan="2"><h4><span class="badge badge-info">Address:</span></h4></td></tr>

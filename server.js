@@ -83,7 +83,7 @@ const handle_Edit = (res,req,criteria) => {
 				res.status(200).render('edit',{restaurant : docs[0]})
 			}
 			else{
-				res.status(200).render('info',{message: `You can't edit it! The owner of the document is "${docs[0].owner}", you are  you are not the owner.`});
+				res.status(200).render('info',{message: `You can't edit it! The owner of the document is "${docs[0].owner}", you are not the owner.`});
 			}
 		})
 	})
@@ -153,7 +153,6 @@ const handle_Update = (req,res,criteria) => {
 	updateDoc['borough'] = req.fields.borough;
 	updateDoc['cuisine'] = req.fields.cuisine;
 	updateDoc['street'] = req.fields.street;
-	updateDoc['mimetype'] = req.fields.mimetype;
 	updateDoc[`address`][`street`] = req.fields.street;
 	updateDoc[`address`][`building`] = req.fields.building;
 	updateDoc[`address`][`zipcode`] = req.fields.zipcode;
@@ -162,13 +161,17 @@ const handle_Update = (req,res,criteria) => {
 		fs.readFile(req.files.filetoupload.path, (err,data) =>{
 			assert.equal(err,null);
 			updateDoc['photo'] = new Buffer.from(data).toString('base64');
+			updateDoc['mimetype'] = req.files.filetoupload.type;
+			console.log("Files type"+ req.files.filetoupload.type);
 			updateDocument(DOCID,updateDoc, (results)=>{
 				res.status(200).render('info', {message: `Upadted ${results.result.nModified} document(s)`})
 			})
 		})
 	} else{
+		updateDoc['mimetype'] = null;
 		updateDocument(DOCID,updateDoc, (results)=>{
 			res.status(200).render('info', {message: `Upadted ${results.result.nModified} document(s)`});
+			console.log("Files type"+ updateDoc['mimetype']);
 		})
 
 	}
@@ -192,7 +195,6 @@ const handle_Create = (req,res,criteria) => {
 		newDoc[`name`] = req.fields.name;
 		newDoc[`borough`] = req.fields.borough;
 		newDoc[`cuisine`] = req.fields.cuisine;
-		newDoc[`mimetype`] = req.fields.mimetype;
 		newDoc[`address`][`street`] = req.fields.street;
 		newDoc[`address`][`building`] = req.fields.building;
 		newDoc[`address`][`zipcode`] = req.fields.zipcode;
@@ -203,6 +205,8 @@ const handle_Create = (req,res,criteria) => {
 			fs.readFile(req.files.filetoupload.path, (err,data)=>{
 				assert.equal(err,null);
 				newDoc['photo'] = new Buffer.from(data).toString('base64');
+				newDoc['mimetype'] = req.files.filetoupload.type;
+				console.log(req.files.filetoupload.type)
 				insertDocument(db,newDoc,(result)=>{
 				client.close();
 				res.redirect('/find')
@@ -211,6 +215,7 @@ const handle_Create = (req,res,criteria) => {
 			})
 		}
 		else{
+			newDoc[`mimetype`] = null;
 			insertDocument(db,newDoc,(result)=>{
 			client.close();
 			res.redirect('/find')
@@ -271,6 +276,7 @@ const handle_Rate = (res,req,criteria) => {
 		var DOCID = {};
 		DOCID['_id'] = ObjectID(criteria._id);
 		findDocument(db,DOCID,(result)=>{
+		
 			//let originalGrades = result;
 			for (let element of result[0].grades){
 				console.log(element.users +";" +req.session.username);
@@ -283,7 +289,7 @@ const handle_Rate = (res,req,criteria) => {
 			if(duplicateFlag){
 				res.status(200).render('info',{message:"You have rated before"});
 			} else{
-				res.status(200).render('rate',{_id:criteria._id});
+				res.status(200).render('rate',{_id:criteria._id,user:req.session.username});
 			}
 		})
 		
@@ -304,16 +310,12 @@ const handle_updateRate = (res,req,criteria) => {
 		let gradeStr = JSON.stringify(grade);
 		console.log("The DOCID:"+JSON.stringify(DOCID));
 		pushDocument(DOCID,grade,(results)=>{
-				res.status(200).render('info', {message: `Pushed ${gradeStr} into grades of document. ${results.result.nModified}`})
+				res.status(200).render('info', {message: `Pushed ${gradeStr} into grades of document. \nnModified: ${results.result.nModified}`})
 		})
 
 	});
 }
 
-
-app.get('/updateRate',function(req,res){
-	handle_updateRate(res,req,req.query);
-});
 
 app.get('/find', function(req,res){
 	handle_Find(res,req,req.query);	
